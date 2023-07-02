@@ -21,6 +21,8 @@ Send information to a telegram channel/chat/group using an existent bot
 
 ## Usage
 
+Change /etc/fail2ban/jail.d/ files matching your needs
+
 Only need Jails are using that
 
 ## Contributing

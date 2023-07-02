@@ -131,7 +131,7 @@ def main():
         BAN_IP = sys.argv[2]
     except IndexError:
         display_help()
-        return False
+        sys.exit(0)
     if len(sys.argv) == 1:
         display_help()
     elif sys.argv[1] == 'ban':
@@ -144,7 +144,7 @@ def main():
                 print("Error: " + BAN_IP + "is not valid")
             elif is_banned_ip(BAN_IP):
                 print("Error: IP is already banned")
-            return False
+            sys.exit(1)
     elif sys.argv[1] == 'unban':
         check_dependencies(False)
         remove_banned_ip(BAN_IP)
@@ -152,6 +152,7 @@ def main():
         check_dependencies()
     else:
         display_help()
+    sys.exit(0)
 # Run main function
 if __name__ == "__main__":
     main()
