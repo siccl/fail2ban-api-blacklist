@@ -1,0 +1,152 @@
+[nginx-http-auth]
+enabled = true
+
+[nginx-botsearch]
+enabled	= true
+port     = http,https
+logpath  = %(nginx_access_log)s
+maxretry = 4
+
+[nginx-noagent]
+enabled = true
+port     = http,https
+filter = nginx-noagent
+action = iptables-allports
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 3
+
+[nginx-403]
+enabled = true
+port     = http,https
+filter = nginx-403
+action = iptables-allports 
+	 telegram
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 120m
+maxretry = 8
+
+[nginx-499]
+enabled = true
+port     = http,https
+filter = nginx-499
+action = iptables-allports
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 300
+maxretry = 30
+
+[nginx-dos]
+enabled  = true
+port     = http
+filter   = nginx-dos
+action = iptables-allports
+	 blacklist
+logpath  = %(nginx_access_log)s
+findtime = 60
+maxretry = 240
+bantime = 120
+
+[nginx-404]
+enabled = true
+port     = http,https
+filter = nginx-404
+action = iptables-allports
+	 telegram
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 120m
+maxretry = 30
+# maxmatches
+
+[nginx-noscript]
+# Be careful, if php is enabled it is very restrictive, it can block monitoring
+enabled = true
+action = iptables-allports
+filter = nginx-noscript
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 3
+
+[nginx-noproxy]
+enabled = true
+action = iptables-allports
+	 blacklist
+filter = nginx-noproxy
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 0
+
+[webexploits]
+enabled   = true
+logpath = %(nginx_access_log)s
+filter = webexploits
+action = iptables-allports
+	 blacklist
+port    = http,https
+bantime = 1440m
+findtime = 1440m
+maxretry = 0
+
+[nginx-badbots]
+enabled  = true
+filter = apache-badbots
+action = iptables-multiport[name=BadBots, port="http,https"]
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 86400 # 1 day
+maxretry = 1
+
+[nginx-bad-request]
+enabled = true
+port    = http,https
+logpath = %(nginx_access_log)s
+
+[nginx-noauth]
+# TODO: no match found, need check
+enabled = False
+filter = nginx-noauth
+action = iptables-allports
+	 blacklist
+logpath = %(nginx_error_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 5
+
+[nginx-no-x-spam]
+# TODO: no match found, need check
+enabled = False
+filter = nginx-no-x-spam
+action = iptables-allports
+	 blacklist
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 5
+
+[nginx-nowordpress]
+# TODO: check regular expressions, they don't work
+enabled = False
+action = iptables-allports
+filter = nginx-nowordpress
+logpath = %(nginx_access_log)s
+bantime = 1440m # 1 day
+findtime = 1440m # 1 day
+maxretry = 3
+
+[nginx-437]
+# TODO: 
+enabled = False
+port = http,https
+filter = nginx-437
+logpath = %(nginx_access_log)s
+bantime = 259200
+maxretry= 1
