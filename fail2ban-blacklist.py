@@ -6,7 +6,7 @@ import datetime
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path="/home/hgaete/vscode/python/fail2ban/.env")
 
 # Set environment variables
 BLACKLIST_FILE = os.getenv('BLACKLIST_FILE')
@@ -14,7 +14,7 @@ BLACKLIST_FILE = os.getenv('BLACKLIST_FILE')
 # Save banned IP into file function
 def save_banned_ip(BAN_IP):
     with open(BLACKLIST_FILE, 'a') as file:
-        file.write(BAN_IP + '\n')
+        file.write("deny "+BAN_IP + ';\n')
 
 # Remove banned IP from file function
 def remove_banned_ip(BAN_IP):
@@ -22,7 +22,7 @@ def remove_banned_ip(BAN_IP):
         lines = file.readlines()
         file.seek(0)
         for line in lines:
-            if line != BAN_IP + '\n':
+            if BAN_IP not in line:
                 file.write(line)
         file.truncate()
 
@@ -62,13 +62,14 @@ def generate_jwt_token():
     NOW = datetime.datetime.utcnow()
     EXP_TIME = int(os.getenv('JWT_EXP_TIME'))
     EXP = NOW + datetime.timedelta(seconds=EXP_TIME)
+    NBF = NOW + datetime.timedelta(seconds=-10)
     payload = {
         "iss": os.getenv('JWT_ISSUER'),
         "iat": NOW,
         "exp": EXP,
-        "nbf": NOW,
+        "nbf": NBF,
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM).decode('utf-8')
 
 # Send banned IP to API function
 def send_banned_ip(BAN_IP):
@@ -79,9 +80,13 @@ def send_banned_ip(BAN_IP):
     }
     data = '{"IP": "' + BAN_IP + '"}'
     response = requests.post(API_URL, headers=headers, data=data)
+    log_file = open('/var/log/fail2ban/scripts.log', 'a')
     if response.status_code == 200:
+        log_file.write(str(response.status_code)+':'+response.text+'\n')
         return True
     else:
+        log_file.write(str(response.status_code)+':'+response.text+'\n')
+        log_file.write(str(headers))
         return False
 
 # Display help function
