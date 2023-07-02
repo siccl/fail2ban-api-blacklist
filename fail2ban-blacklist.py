@@ -74,6 +74,7 @@ def generate_jwt_token():
 # Send banned IP to API function
 def send_banned_ip(BAN_IP):
     API_URL = os.getenv('API_URL')
+    DEBUG = os.getenv('DEBUG')
     headers = {
         'Authorization': 'Bearer ' + generate_jwt_token(),
         'Content-Type': 'application/json',
@@ -82,11 +83,13 @@ def send_banned_ip(BAN_IP):
     response = requests.post(API_URL, headers=headers, data=data)
     log_file = open('/var/log/fail2ban/scripts.log', 'a')
     if response.status_code == 200:
-        log_file.write(str(response.status_code)+':'+response.text+'\n')
+        if DEBUG == 1:
+            log_file.write(str(response.status_code)+':'+response.text+'\n')
         return True
     else:
-        log_file.write(str(response.status_code)+':'+response.text+'\n')
-        log_file.write(str(headers))
+        if DEBUG == 1:
+            log_file.write(str(response.status_code)+':'+response.text+'\n')
+            log_file.write(str(headers))
         return False
 
 # Display help function
