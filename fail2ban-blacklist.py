@@ -6,7 +6,7 @@ import datetime
 import requests
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="/home/hgaete/vscode/python/fail2ban/.env")
+load_dotenv(dotenv_path="/etc/fail2ban/scripts/.env")
 
 # Set environment variables
 BLACKLIST_FILE = os.getenv('BLACKLIST_FILE')
