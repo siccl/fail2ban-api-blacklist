@@ -4,9 +4,10 @@ import os
 import ipaddress
 import datetime
 import requests
+import time
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="/etc/fail2ban/scripts/.env")
+load_dotenv(dotenv_path="./.env")
 
 # Set environment variables
 BLACKLIST_FILE = os.getenv('BLACKLIST_FILE')
@@ -62,14 +63,18 @@ def generate_jwt_token():
     NOW = datetime.datetime.utcnow()
     EXP_TIME = int(os.getenv('JWT_EXP_TIME'))
     EXP = NOW + datetime.timedelta(seconds=EXP_TIME)
-    NBF = NOW + datetime.timedelta(seconds=-10)
+    NBF = NOW + datetime.timedelta(seconds=-30)
     payload = {
         "iss": os.getenv('JWT_ISSUER'),
         "iat": NOW,
         "exp": EXP,
         "nbf": NBF,
     }
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM).decode('utf-8')
+    try:
+        output = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM).decode('utf-8')
+    except:
+        output = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return output
 
 # Send banned IP to API function
 def send_banned_ip(BAN_IP):
@@ -80,17 +85,24 @@ def send_banned_ip(BAN_IP):
         'Content-Type': 'application/json',
     }
     data = '{"IP": "' + BAN_IP + '"}'
-    response = requests.post(API_URL, headers=headers, data=data)
-    log_file = open('/var/log/fail2ban/scripts.log', 'a')
-    if response.status_code == 200:
-        if DEBUG == 1:
-            log_file.write(str(response.status_code)+':'+response.text+'\n')
-        return True
-    else:
-        if DEBUG == 1:
-            log_file.write(str(response.status_code)+':'+response.text+'\n')
-            log_file.write(str(headers))
-        return False
+    counter = 0
+    output = False
+    while counter < 3:
+        response = requests.post(API_URL, headers=headers, data=data)
+        log_file = open('/var/log/fail2ban/scripts.log', 'a')
+        if response.status_code == 200:
+            counter = 3
+            if DEBUG == 1:
+                log_file.write(str(response.status_code)+':'+response.text+'\n')
+            output = True
+        else:
+            counter += 1
+            if DEBUG == 1:
+                log_file.write(str(response.status_code)+':'+response.text+'\n')
+                log_file.write(str(headers))
+            output = False
+            time.sleep(2)
+    return output
 
 # Display help function
 def display_help():
@@ -158,6 +170,9 @@ def main():
         remove_banned_ip(BAN_IP)
     elif sys.argv[1] == 'check':
         check_dependencies()
+    elif sys.argv[1] == 'token':
+        token = generate_jwt_token()
+        print(token)
     else:
         display_help()
     sys.exit(0)
