@@ -1,7 +1,6 @@
 # Python Scripts for fail2Ban
 
 Another utilities project for fail2Ban
-github.com/siccl
 
 ## Scripts
 
